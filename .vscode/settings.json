@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/c09a4523-e787-43ef-b882-00eba25467e7/resourceGroups/keeper/providers/Microsoft.Web/sites/Keeper-akshat",
+    "appService.deploySubpath": "."
+}
