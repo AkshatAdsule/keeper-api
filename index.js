@@ -21,7 +21,7 @@ const app = express();
 app.use(express.json({ type: "*/*" }));
 
 //routes
-app.get("/notes", (req, res) => {
+app.get("/", (req, res) => {
   Note.find({}, (err, notes) => {
     if (!err) {
       res.status(200).send(notes);
@@ -30,7 +30,7 @@ app.get("/notes", (req, res) => {
   });
 });
 
-app.post("/notes", (req, res) => {
+app.post("/", (req, res) => {
   let reqBody = req.body;
   console.log(reqBody, "got this");
   Note.create(reqBody, (err) => {
