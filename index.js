@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyparser = require("body-parser");
 
+//mongo setup
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -10,16 +10,17 @@ mongoose.connect(process.env.MONGO_URI, {
 mongoose.set("useCreateIndex", true);
 
 const noteSchema = mongoose.Schema({
-  id: String,
-  title: String,
-  body: String,
+  title: { type: String, required: true },
+  body: { type: String, required: true },
 });
 
 const Note = mongoose.model("note", noteSchema);
 
+//app setup
 const app = express();
-app.use(bodyparser.urlencoded({ extended: true }));
+app.use(express.json({ type: "*/*" }));
 
+//routes
 app.get("/", (req, res) => {
   Note.find({}, (err, notes) => {
     if (!err) {
@@ -30,19 +31,17 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  Note.create(
-    {
-      id: "1",
-      title: "Hello",
-      body: "World",
-    },
-    (err) => {
-      if (!err) {
-        res.status(201).send("Created");
-        console.log("Created");
-      }
+  const reqBody = req.body;
+  console.log(reqBody, "got this");
+  Note.create(reqBody, (err) => {
+    if (!err) {
+      res.status(201).send("Created");
+      console.log("Created");
+    } else {
+      console.log(err);
+      res.status(500).send(err);
     }
-  );
+  });
 });
 
 app.listen(3000, () => {
