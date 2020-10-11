@@ -12,7 +12,6 @@ mongoose.set("useCreateIndex", true);
 const noteSchema = mongoose.Schema({
   title: { type: String, required: true },
   body: { type: String, required: true },
-  id: { type: String, required: true },
 });
 
 const Note = mongoose.model("note", noteSchema);
@@ -45,6 +44,6 @@ app.delete("/", (req, res) => {
   });
 });
 
-app.listen(3000 || process.env.PORT, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log("server listening on 3000");
 });
