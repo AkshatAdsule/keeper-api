@@ -12,6 +12,7 @@ mongoose.set("useCreateIndex", true);
 const noteSchema = mongoose.Schema({
   title: { type: String, required: true },
   body: { type: String, required: true },
+  id: { type: String, required: true },
 });
 
 const Note = mongoose.model("note", noteSchema);
@@ -31,16 +32,16 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  const reqBody = req.body;
+  let reqBody = req.body;
   console.log(reqBody, "got this");
   Note.create(reqBody, (err) => {
-    if (!err) {
-      res.status(201).send("Created");
-      console.log("Created");
-    } else {
-      console.log(err);
-      res.status(500).send(err);
-    }
+    !err ? res.status(201).send("Created") : res.status(500).send(err);
+  });
+});
+
+app.delete("/", (req, res) => {
+  Note.deleteOne({ _id: req.body._id }, (error) => {
+    !error ? res.status(200).send("deleted") : res.status(500).send(error);
   });
 });
 
