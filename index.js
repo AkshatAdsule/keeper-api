@@ -22,18 +22,15 @@ app.use(express.json({ type: "application/json" }));
 
 //routes
 app.get("/", (req, res) => {
-  Note.find({}, (err, notes) => {
-    if (!err) {
-      res.status(200).send(notes);
-      console.log("Found posts");
-    }
+  Note.find({}, (error, notes) => {
+    !error ? res.status(200).send(notes) : res.status(500).send(error);
   });
 });
 
 app.post("/", (req, res) => {
   let reqBody = req.body;
-  Note.create(reqBody, (err) => {
-    !err ? res.status(201).send("Created") : res.status(500).send(err);
+  Note.create(reqBody, (error) => {
+    !error ? res.status(201).send("Created") : res.status(500).send(err);
   });
 });
 
