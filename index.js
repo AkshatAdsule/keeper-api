@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 
 //mongo setup
 mongoose.connect(process.env.MONGO_URI, {
@@ -20,7 +19,6 @@ const Note = mongoose.model("note", noteSchema);
 //app setup
 const app = express();
 app.use(express.json({ type: "application/json" }));
-app.use(cors());
 
 //routes
 app.get("/", (req, res) => {
