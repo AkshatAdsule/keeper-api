@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 //mongo setup
 mongoose.connect(process.env.MONGO_URI, {
@@ -18,7 +19,8 @@ const Note = mongoose.model("note", noteSchema);
 
 //app setup
 const app = express();
-app.use(express.json({ type: "*/*" }));
+app.use(express.json({ type: "application/json" }));
+app.use(cors());
 
 //routes
 app.get("/", (req, res) => {
@@ -32,18 +34,18 @@ app.get("/", (req, res) => {
 
 app.post("/", (req, res) => {
   let reqBody = req.body;
-  console.log(reqBody, "got this");
   Note.create(reqBody, (err) => {
     !err ? res.status(201).send("Created") : res.status(500).send(err);
   });
 });
 
-app.delete("/", (req, res) => {
-  Note.deleteOne({ _id: req.body._id }, (error) => {
-    !error ? res.status(200).send("deleted") : res.status(500).send(error);
+app.delete("/:id", (req, res) => {
+  console.log(req.params.id);
+  Note.deleteOne({ _id: req.params.id }, (error) => {
+    !error ? res.status(202).send("deleted") : res.status(500).send(error);
   });
 });
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3001, () => {
   console.log("server listening on 3000");
 });
