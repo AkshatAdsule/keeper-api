@@ -20,8 +20,18 @@ const Note = mongoose.model("note", noteSchema);
 const app = express();
 app.use(express.json({ type: "application/json" }));
 
+// Rate Limiter
+var RateLimit = require('express-rate-limit');
+var limiter = new RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 10
+});
+
+// apply rate limiter to all requests
+app.use(limiter);
+
 //routes
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   Note.find({}, (error, notes) => {
     !error ? res.status(200).send(notes) : res.status(500).send(error);
   });
