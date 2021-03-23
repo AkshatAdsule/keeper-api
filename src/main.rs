@@ -1,54 +1,44 @@
+use actix_cors::Cors;
+use actix_web::{delete, get, post, web, App, HttpResponse, HttpServer, Responder};
 use keeper_api::db::DBService;
-use std::error::Error;
+use keeper_api::Note;
+use std::sync::Mutex;
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct Note {
-//     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-//     id: Option<bson::oid::ObjectId>,
-//     title: String,
-//     body: String
-// }
+#[get("/")]
+async fn index(data: web::Data<Mutex<DBService>>) -> impl Responder {
+    let db =data.lock().unwrap();
+    println!("{:?}", db.get_all().await.unwrap());
+    HttpResponse::Ok().json(db.get_all().await.unwrap())
+}
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // Load the MongoDB connection string from an environment variable:
-    // let client_uri = env::var("MONGO_URI").expect("You must set the MONGO_URI environment var!");
-    //
-    // let client = mongodb::Client::with_uri_str(client_uri.as_ref()).await?;
-    //
-    // // Notes collection
-    // let notes = client.database("keeper").collection("notes");
-    // let note: Note =  Note{ id: None, title: "This was made with rust!!".to_owned(), body: "Rust is just amazing!".to_owned()};
-    //
-    // let serialized_note = bson::to_bson(&note)?;
-    // let document = serialized_note.as_document().unwrap();
-    //
-    // let inserted_document = notes.insert_one(document.to_owned(), None).await?;
-    //
-    // let inserted_note_id = inserted_document
-    //     .inserted_id
-    //     .as_object_id()
-    //     .expect("Retrieved _id should have been of type ObjectId");
-    //
-    // println!("Captain Marvel document ID: {:?}", inserted_note_id);
+#[post("/")]
+async fn post(note: web::Json<Note>, data: web::Data<Mutex<DBService>>) -> impl Responder {
+    let db = data.lock().unwrap();
+    db.create(&note).await.unwrap();
+    println!("{:?}", note);
+    HttpResponse::Ok()
+}
 
-    let db = DBService::new().await?;
-    let data = db.get_all().await?;
-    let mut delete = true;
+#[delete("/{id}")]
+async fn delete(id: web::Path<String>, data: web::Data<Mutex<DBService>>) -> impl Responder {
+    let db = data.lock().unwrap();
+    db.delete(id.as_str()).await.unwrap();
+    println!("Got id: {}", id);
+    HttpResponse::Ok()
+}
 
-    for note in data {
-        if delete {
-            println!("Deleting note: {:?}\n", note);
-            let del_res = db.delete(note.id.unwrap()).await?;
-            println!("Deleted {} documents", del_res.deleted_count);
-            delete = false;
-            continue;
-        }
-        // println!("Got note: {:?}\n", note);
-    }
-    // let test_note = Note {id: None, title: "from dbService".to_owned(), body: "posted from dbService".to_owned()};
-    // let res = db.create(&test_note).await?;
-    // println!("Document ID: {}", res.inserted_id);
-
-    Ok(())
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let client = web::Data::new(Mutex::new(DBService::new().await.unwrap()));
+    HttpServer::new(move|| {
+        App::new()
+            .app_data(client.clone())
+            .wrap(Cors::new().allowed_origin("http://localhost:3000").finish())
+            .service(index)
+            .service(post)
+            .service(delete)
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }

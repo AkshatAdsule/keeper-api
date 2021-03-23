@@ -7,10 +7,10 @@ pub mod db {
     use crate::Note;
     use mongodb::bson::{self, doc, Bson, Document};
     use mongodb::results::{DeleteResult, InsertOneResult};
+    use mongodb::Collection;
     use std::env;
     use std::error::Error;
     use tokio::stream::StreamExt;
-    use mongodb::Collection;
 
     pub struct DBService {
         client: mongodb::Client,
@@ -45,7 +45,8 @@ pub mod db {
             Ok(data)
         }
 
-        pub async fn delete(&self, id: bson::oid::ObjectId) -> Result<DeleteResult, Box<dyn Error>> {
+        pub async fn delete(&self, id: &str) -> Result<DeleteResult, Box<dyn Error>> {
+            let id = bson::oid::ObjectId::with_string(id)?;
             let notes_collection = self.client.database("keeper").collection("notes");
             let delete_res = notes_collection.delete_one(doc! {"_id": id}, None).await?;
             Ok(delete_res)
