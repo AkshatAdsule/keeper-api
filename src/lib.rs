@@ -5,9 +5,8 @@ use serde::{Deserialize, Serialize};
 
 pub mod db {
     use crate::Note;
-    use mongodb::bson::{self, doc, Bson, Document};
+    use mongodb::bson::{self, doc};
     use mongodb::results::{DeleteResult, InsertOneResult};
-    use mongodb::Collection;
     use std::env;
     use std::error::Error;
     use tokio::stream::StreamExt;

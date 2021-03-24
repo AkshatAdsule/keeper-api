@@ -7,24 +7,29 @@ use std::sync::Mutex;
 #[get("/")]
 async fn index(data: web::Data<Mutex<DBService>>) -> impl Responder {
     let db =data.lock().unwrap();
-    println!("{:?}", db.get_all().await.unwrap());
-    HttpResponse::Ok().json(db.get_all().await.unwrap())
+    let notes = match db.get_all().await {
+        Ok(notes) => notes,
+        Err(_) => vec![]
+    };
+    HttpResponse::Ok().json(notes)
 }
 
 #[post("/")]
 async fn post(note: web::Json<Note>, data: web::Data<Mutex<DBService>>) -> impl Responder {
     let db = data.lock().unwrap();
-    db.create(&note).await.unwrap();
-    println!("{:?}", note);
-    HttpResponse::Ok()
+    match db.create(&note).await {
+        Ok(_) => HttpResponse::Ok(),
+        Err(_) => HttpResponse::BadRequest(),
+    }
 }
 
 #[delete("/{id}")]
 async fn delete(id: web::Path<String>, data: web::Data<Mutex<DBService>>) -> impl Responder {
     let db = data.lock().unwrap();
-    db.delete(id.as_str()).await.unwrap();
-    println!("Got id: {}", id);
-    HttpResponse::Ok()
+    match db.delete(&id).await {
+        Ok(_) => HttpResponse::Ok(),
+        Err(_) => HttpResponse::BadRequest(),
+    }
 }
 
 #[actix_web::main]
