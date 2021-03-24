@@ -2,14 +2,15 @@ use actix_cors::Cors;
 use actix_web::{delete, get, post, web, App, HttpResponse, HttpServer, Responder};
 use keeper_api::db::DBService;
 use keeper_api::Note;
+use std::env;
 use std::sync::Mutex;
 
 #[get("/")]
 async fn index(data: web::Data<Mutex<DBService>>) -> impl Responder {
-    let db =data.lock().unwrap();
+    let db = data.lock().unwrap();
     let notes = match db.get_all().await {
         Ok(notes) => notes,
-        Err(_) => vec![]
+        Err(_) => vec![],
     };
     HttpResponse::Ok().json(notes)
 }
@@ -34,8 +35,12 @@ async fn delete(id: web::Path<String>, data: web::Data<Mutex<DBService>>) -> imp
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT must be a number");
     let client = web::Data::new(Mutex::new(DBService::new().await.unwrap()));
-    HttpServer::new(move|| {
+    HttpServer::new(move || {
         App::new()
             .app_data(client.clone())
             .wrap(Cors::new().allowed_origin("http://localhost:3000").finish())
@@ -43,7 +48,7 @@ async fn main() -> std::io::Result<()> {
             .service(post)
             .service(delete)
     })
-    .bind("127.0.0.1:8080")?
-    .run()
+    .bind(("0.0.0.0", port))
+    .expect("Can not bind to port 8000")
     .await
 }
