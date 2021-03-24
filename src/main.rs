@@ -36,14 +36,14 @@ async fn delete(id: web::Path<String>, data: web::Data<Mutex<DBService>>) -> imp
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string())
+        .unwrap_or_else(|_| "8000".to_string())
         .parse()
         .expect("PORT must be a number");
     let client = web::Data::new(Mutex::new(DBService::new().await.unwrap()));
     HttpServer::new(move || {
         App::new()
             .app_data(client.clone())
-            .wrap(Cors::new().allowed_origin("http://localhost:3000").finish())
+            .wrap(Cors::new().supports_credentials().finish())
             .service(index)
             .service(post)
             .service(delete)
