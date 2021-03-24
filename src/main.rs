@@ -49,6 +49,6 @@ async fn main() -> std::io::Result<()> {
             .service(delete)
     })
     .bind(("0.0.0.0", port))
-    .expect("Can not bind to port 8000")
+    .expect("Can not bind to port 8000").run()
     .await
 }
